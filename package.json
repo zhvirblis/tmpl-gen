@@ -1,0 +1,10 @@
+{
+  "name": "tmpl-gen",
+  "version": "0.1.0",
+  "description": "Generate files and folders using templates",
+  "main": "./bin/index.js",
+  "bin": "./bin/index.js",
+  "author": "Yuri Zhvirblis",
+  "license": "ISC",
+  "type": "module"
+}
