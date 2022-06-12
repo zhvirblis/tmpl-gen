@@ -13,66 +13,76 @@ const variables = varsArr.reduce((obj, arrV) => {
   }
 }, {});
 
-function getTemplateFolderPath(filePath) {
-  return `${os.homedir()}/.tmpl-gen/${filePath}`;
-}
+async function start(templateName, path) {
 
-async function getTemplateFilesAndDirectories(templateName) {
-  return await fs.readdir(getTemplateFolderPath(templateName));
-}
-
-function getTemplateFilePath(file) {
-  return `${getTemplateFolderPath(templateName)}/${file}`;
-}
-
-async function getLStat(fileOrFolder) {
-  return (await fs.lstat(getTemplateFilePath(fileOrFolder)));
-}
-
-async function separateFoldersAndFiles(filesAndDirectories) {
-  const files = [];
-  const directories = [];
-  for (const fileOrFolder of filesAndDirectories) {
-    const isFile = (await getLStat(fileOrFolder)).isFile();
-    const isDirectory = (await getLStat(fileOrFolder)).isDirectory();
-    if (isFile) {
-      files.push(fileOrFolder);
-    } else if (isDirectory) {
-      directories.push(fileOrFolder);
+  function getTemplateDirPath(filePath) {
+    return `${os.homedir()}/.tmpl-gen/${filePath}`;
+  }
+  
+  async function getTemplateFilesAndDirectories() {
+    return await fs.readdir(getTemplateDirPath(templateName));
+  }
+  
+  function getTemplateFilePath(file) {
+    return `${getTemplateDirPath(templateName)}/${file}`;
+  }
+  
+  async function getLStat(fileOrDir) {
+    return (await fs.lstat(getTemplateFilePath(fileOrDir)));
+  }
+  
+  async function separateDirsAndFiles(filesAndDirectories) {
+    const files = [];
+    const directories = [];
+    for (const fileOrDir of filesAndDirectories) {
+      const isFile = (await getLStat(fileOrDir)).isFile();
+      const isDirectory = (await getLStat(fileOrDir)).isDirectory();
+      if (isFile) {
+        files.push(fileOrDir);
+      } else if (isDirectory) {
+        directories.push(fileOrDir);
+      }
     }
+    return [files, directories];
   }
-  return [files, directories];
-}
-
-function replaceVarToValue(from, to, content) {
-  return content.replaceAll(`%{${from}}`, to);
-}
-
-function replaceAllVariables(content) {
-  let newContent = content;
-  for (const name in variables) {
-    newContent = replaceVarToValue(name, variables[name], newContent);
+  
+  function replaceVarToValue(from, to, content) {
+    return content.replaceAll(`%{${from}}`, to);
   }
-  return newContent;
-}
+  
+  function replaceAllVariables(content) {
+    let newContent = content;
+    for (const name in variables) {
+      newContent = replaceVarToValue(name, variables[name], newContent);
+    }
+    return newContent;
+  }
+  
+  async function generateFile(file) {
+    const newFileName = replaceAllVariables(file);
+    const content = (await fs.readFile(getTemplateFilePath(file))).toString();
+    const newContent = replaceAllVariables(content);
+    fs.writeFile(`${path}${newFileName}`, newContent);
+  }
+  
+  async function generateFiles(files) {
+    files.forEach(async file => {
+      await generateFile(file);
+    });
+  }
 
-async function generateFile(file) {
-  const newFileName = replaceAllVariables(file);
-  const content = (await fs.readFile(getTemplateFilePath(file))).toString();
-  const newContent = replaceAllVariables(content);
-  fs.writeFile(newFileName, newContent);
-}
+  async function generateDirsWithFiles(directories) {
+    directories.forEach(directoryName => {
+      const newDirName = replaceAllVariables(directoryName);
+      fs.mkdir(newDirName);
+      start(`${templateName}/${directoryName}`, `${path}/${newDirName}/`);
+    });
+  }
 
-async function generateFiles(files) {
-  files.forEach(async file => {
-    await generateFile(file);
-  });
-}
-
-async function start() {
-  const filesAndDirectories = await getTemplateFilesAndDirectories(templateName);
-  const [files, directories] = await separateFoldersAndFiles(filesAndDirectories);
+  const filesAndDirectories = await getTemplateFilesAndDirectories();
+  const [files, directories] = await separateDirsAndFiles(filesAndDirectories);
   generateFiles(files);
+  generateDirsWithFiles(directories);
 }
 
-start();
+start(templateName, './');
