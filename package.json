@@ -6,5 +6,8 @@
   "bin": "./bin/index.js",
   "author": "Yuri Zhvirblis",
   "license": "ISC",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "change-case": "^4.1.2"
+  }
 }

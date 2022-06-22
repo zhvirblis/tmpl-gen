@@ -2,6 +2,18 @@
 
 import { promises as fs, readFile } from 'fs';
 import os from 'os';
+import {
+  camelCase,
+  capitalCase,
+  constantCase,
+  dotCase,
+  headerCase,
+  noCase,
+  paramCase,
+  pascalCase,
+  sentenceCase,
+  snakeCase
+} from 'change-case';
 
 const templateName = process.argv[2];
 const varsArr = process.argv.slice(3);
@@ -47,7 +59,18 @@ async function start(templateName, path) {
   }
   
   function replaceVarToValue(from, to, content) {
-    return content.replaceAll(`%{${from}}`, to);
+    return content.replaceAll(`%{${from}}`, to)
+                  .replaceAll(`%{${from}|camelCase}`, camelCase(to))
+                  .replaceAll(`%{${from}|capitalCase}`, capitalCase(to))
+                  .replaceAll(`%{${from}|constantCase}`, constantCase(to))
+                  .replaceAll(`%{${from}|dotCase}`, dotCase(to))
+                  .replaceAll(`%{${from}|headerCase}`, headerCase(to))
+                  .replaceAll(`%{${from}|noCase}`, noCase(to))
+                  .replaceAll(`%{${from}|paramCase}`, paramCase(to))
+                  .replaceAll(`%{${from}|pascalCase}`, pascalCase(to))
+                  .replaceAll(`%{${from}|sentenceCase}`, sentenceCase(to))
+                  .replaceAll(`%{${from}|snakeCase}`, snakeCase(to))
+
   }
   
   function replaceAllVariables(content) {
