@@ -97,7 +97,7 @@ async function start(templateName, path) {
   async function generateDirsWithFiles(directories) {
     directories.forEach(directoryName => {
       const newDirName = replaceAllVariables(directoryName);
-      fs.mkdir(newDirName);
+      fs.mkdir(`${path}/${newDirName}/`);
       start(`${templateName}/${directoryName}`, `${path}/${newDirName}/`);
     });
   }
