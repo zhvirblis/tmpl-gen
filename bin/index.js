@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { promises as fs, readFile } from 'fs';
+import { promises as fs } from 'fs';
 import os from 'os';
 import {
   camelCase,
